@@ -1,0 +1,132 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
+
+class Card {
+    private final String suit;
+    private final String rank;
+
+    public Card(String suit, String rank) {
+        this.suit = suit;
+        this.rank = rank;
+    }
+
+    public String getSuit() {
+        return suit;
+    }
+
+    public String getRank() {
+        return rank;
+    }
+
+    public int getValue() {
+        try {
+            return Integer.parseInt(rank);
+        } catch (NumberFormatException e) {
+            // For non-numeric cards (e.g., Jack, Queen, King)
+            return 10;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return rank + " of " + suit;
+    }
+}
+
+class Deck {
+    private List<Card> cards;
+
+    public Deck() {
+        cards = new ArrayList<>();
+        String[] suits = {"Hearts", "Diamonds", "Clubs", "Spades"};
+        String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"};
+
+        for (String suit : suits) {
+            for (String rank : ranks) {
+                cards.add(new Card(suit, rank));
+            }
+        }
+
+        Collections.shuffle(cards);
+    }
+
+    public Card drawCard() {
+        return cards.remove(0);
+    }
+}
+
+public class Blackjack {
+    private static final int TARGET_SCORE = 21;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Deck deck = new Deck();
+
+        int playerScore = 0;
+        int dealerScore = 0;
+
+        // Initial deal
+        Card playerCard1 = deck.drawCard();
+        Card playerCard2 = deck.drawCard();
+        Card dealerCard1 = deck.drawCard();
+        Card dealerCard2 = deck.drawCard();
+
+        playerScore += playerCard1.getValue() + playerCard2.getValue();
+        dealerScore += dealerCard1.getValue() + dealerCard2.getValue();
+
+        System.out.println("Your cards: " + playerCard1 + ", " + playerCard2);
+        System.out.println("Dealer's cards: " + dealerCard1 + ", [Hidden]");
+
+        // Player's turn
+        while (playerScore < TARGET_SCORE) {
+            System.out.print("Do you want to hit or stand? (h/s): ");
+            String choice = scanner.nextLine().toLowerCase();
+
+            if (choice.equals("h")) {
+                Card newCard = deck.drawCard();
+                playerScore += newCard.getValue();
+                System.out.println("You drew: " + newCard);
+                System.out.println("Your score: " + playerScore);
+            } else if (choice.equals("s")) {
+                break;
+            }
+
+            if (playerScore > TARGET_SCORE) {
+                System.out.println("Busted! You lose.");
+                return;
+            }
+        }
+
+        // Dealer's turn
+        System.out.println("Dealer's turn...");
+        System.out.println("Dealer's cards: " + dealerCard1 + ", " + dealerCard2);
+
+        while (dealerScore < 17) {
+            Card newCard = deck.drawCard();
+            dealerScore += newCard.getValue();
+            System.out.println("Dealer drew: " + newCard);
+            System.out.println("Dealer's score: " + dealerScore);
+        }
+
+        // Determine the winner
+        System.out.println("Final scores:");
+        System.out.println("Your score: " + playerScore);
+        System.out.println("Dealer's score: " + dealerScore);
+
+        if (playerScore > TARGET_SCORE) {
+            System.out.println("You busted! Dealer wins.");
+        } else if (dealerScore > TARGET_SCORE) {
+            System.out.println("Dealer busted! You win.");
+        } else if (playerScore > dealerScore) {
+            System.out.println("You win!");
+        } else if (playerScore < dealerScore) {
+            System.out.println("Dealer wins.");
+        } else {
+            System.out.println("It's a tie.");
+        }
+
+        scanner.close();
+    }
+}
